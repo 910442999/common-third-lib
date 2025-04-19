@@ -12,4 +12,5 @@
 -增加 flutter_plugin_record_plus-0.0.19
 
 优化以下代码
--增加 tencent_cloud_chat_uikit-4.0.4
+-增加 tencent_cloud_chat_uikit-4.0.4，优化视频播放页面关闭和下载按钮
+
