@@ -24,8 +24,7 @@ import 'package:tencent_cloud_chat_uikit/ui/views/TIMUIKitChat/TIMUIKITMessageIt
 import 'package:universal_html/html.dart' as html;
 
 class VideoScreen extends StatefulWidget {
-  const VideoScreen(
-      {required this.message, required this.heroTag, required this.videoElement, Key? key})
+  const VideoScreen({required this.message, required this.heroTag, required this.videoElement, Key? key})
       : super(key: key);
 
   final V2TimMessage message;
@@ -37,8 +36,7 @@ class VideoScreen extends StatefulWidget {
 }
 
 class _VideoScreenState extends TIMUIKitState<VideoScreen> {
-  GlobalKey<ExtendedImageSlidePageState> slidePagekey = GlobalKey<
-      ExtendedImageSlidePageState>();
+  GlobalKey<ExtendedImageSlidePageState> slidePagekey = GlobalKey<ExtendedImageSlidePageState>();
   final TUIChatGlobalModel model = serviceLocator<TUIChatGlobalModel>();
 
   @override
@@ -54,22 +52,19 @@ class _VideoScreenState extends TIMUIKitState<VideoScreen> {
   }
 
   //保存网络视频到本地
-  Future<void> _saveNetworkVideo(context,
-      String videoUrl, {
-        bool isAsset = true,
-      }) async {
+  Future<void> _saveNetworkVideo(
+    context,
+    String videoUrl, {
+    bool isAsset = true,
+  }) async {
     if (PlatformUtils().isWeb) {
       RegExp exp = RegExp(r"((\.){1}[^?]{2,4})");
-      String? suffix = exp
-          .allMatches(videoUrl)
-          .last
-          .group(0);
+      String? suffix = exp.allMatches(videoUrl).last.group(0);
       var xhr = html.HttpRequest();
       xhr.open('get', videoUrl);
       xhr.responseType = 'arraybuffer';
       xhr.onLoad.listen((event) {
-        final a = html.AnchorElement(
-            href: html.Url.createObjectUrl(html.Blob([xhr.response])));
+        final a = html.AnchorElement(href: html.Url.createObjectUrl(html.Blob([xhr.response])));
         a.download = '${md5.convert(utf8.encode(videoUrl)).toString()}$suffix';
         a.click();
         a.remove();
@@ -115,8 +110,7 @@ class _VideoScreenState extends TIMUIKitState<VideoScreen> {
       }
       if (model.getMessageProgress(widget.message.msgID) == 100) {
         String savePath;
-        if (widget.message.videoElem!.localVideoUrl != null &&
-            widget.message.videoElem!.localVideoUrl != '') {
+        if (widget.message.videoElem!.localVideoUrl != null && widget.message.videoElem!.localVideoUrl != '') {
           savePath = widget.message.videoElem!.localVideoUrl!;
         } else {
           savePath = model.getFileMessageLocation(widget.message.msgID);
@@ -127,57 +121,39 @@ class _VideoScreenState extends TIMUIKitState<VideoScreen> {
           if (PlatformUtils().isIOS) {
             if (result['isSuccess']) {
               onTIMCallback(
-                  TIMCallback(type: TIMCallbackType.INFO,
-                      infoRecommendText: TIM_t("视频保存成功"),
-                      infoCode: 6660402));
+                  TIMCallback(type: TIMCallbackType.INFO, infoRecommendText: TIM_t("视频保存成功"), infoCode: 6660402));
             } else {
               onTIMCallback(
-                  TIMCallback(type: TIMCallbackType.INFO,
-                      infoRecommendText: TIM_t("视频保存失败"),
-                      infoCode: 6660403));
+                  TIMCallback(type: TIMCallbackType.INFO, infoRecommendText: TIM_t("视频保存失败"), infoCode: 6660403));
             }
           } else {
             if (result != null) {
               onTIMCallback(
-                  TIMCallback(type: TIMCallbackType.INFO,
-                      infoRecommendText: TIM_t("视频保存成功"),
-                      infoCode: 6660402));
+                  TIMCallback(type: TIMCallbackType.INFO, infoRecommendText: TIM_t("视频保存成功"), infoCode: 6660402));
             } else {
               onTIMCallback(
-                  TIMCallback(type: TIMCallbackType.INFO,
-                      infoRecommendText: TIM_t("视频保存失败"),
-                      infoCode: 6660403));
+                  TIMCallback(type: TIMCallbackType.INFO, infoRecommendText: TIM_t("视频保存失败"), infoCode: 6660403));
             }
           }
         }
       } else {
         onTIMCallback(TIMCallback(
-            type: TIMCallbackType.INFO,
-            infoRecommendText: TIM_t("the message is downloading"),
-            infoCode: -1));
+            type: TIMCallbackType.INFO, infoRecommendText: TIM_t("the message is downloading"), infoCode: -1));
       }
       return;
     }
     var result = await ImageGallerySaverPlus.saveFile(savePath);
     if (PlatformUtils().isIOS) {
       if (result['isSuccess']) {
-        onTIMCallback(TIMCallback(type: TIMCallbackType.INFO,
-            infoRecommendText: TIM_t("视频保存成功"),
-            infoCode: 6660402));
+        onTIMCallback(TIMCallback(type: TIMCallbackType.INFO, infoRecommendText: TIM_t("视频保存成功"), infoCode: 6660402));
       } else {
-        onTIMCallback(TIMCallback(type: TIMCallbackType.INFO,
-            infoRecommendText: TIM_t("视频保存失败"),
-            infoCode: 6660403));
+        onTIMCallback(TIMCallback(type: TIMCallbackType.INFO, infoRecommendText: TIM_t("视频保存失败"), infoCode: 6660403));
       }
     } else {
       if (result != null) {
-        onTIMCallback(TIMCallback(type: TIMCallbackType.INFO,
-            infoRecommendText: TIM_t("视频保存成功"),
-            infoCode: 6660402));
+        onTIMCallback(TIMCallback(type: TIMCallbackType.INFO, infoRecommendText: TIM_t("视频保存成功"), infoCode: 6660402));
       } else {
-        onTIMCallback(TIMCallback(type: TIMCallbackType.INFO,
-            infoRecommendText: TIM_t("视频保存失败"),
-            infoCode: 6660403));
+        onTIMCallback(TIMCallback(type: TIMCallbackType.INFO, infoRecommendText: TIM_t("视频保存失败"), infoCode: 6660403));
       }
     }
     return;
@@ -203,8 +179,7 @@ class _VideoScreenState extends TIMUIKitState<VideoScreen> {
         );
       }
     }
-    if (widget.videoElement.localVideoUrl != '' &&
-        widget.videoElement.localVideoUrl != null) {
+    if (widget.videoElement.localVideoUrl != '' && widget.videoElement.localVideoUrl != null) {
       File f = File(widget.videoElement.localVideoUrl!);
       if (f.existsSync()) {
         return await _saveNetworkVideo(
@@ -259,10 +234,7 @@ class _VideoScreenState extends TIMUIKitState<VideoScreen> {
             Container(
               color: Colors.transparent,
               constraints: BoxConstraints.expand(
-                height: MediaQuery
-                    .of(context)
-                    .size
-                    .height,
+                height: MediaQuery.of(context).size.height,
               ),
               child: ExtendedImageSlidePage(
                 key: slidePagekey,
@@ -271,13 +243,12 @@ class _VideoScreenState extends TIMUIKitState<VideoScreen> {
                     return Colors.black;
                   }
                   double opacity = 0.0;
-                  opacity = offset.distance /
-                      (Offset(size.width, size.height).distance / 2.0);
-                  return Colors.black.withOpacity(min(1.0, max(1.0 - opacity,
-                      0.0)));
+                  opacity = offset.distance / (Offset(size.width, size.height).distance / 2.0);
+                  return Colors.black.withOpacity(min(1.0, max(1.0 - opacity, 0.0)));
                 },
                 slideType: SlideType.onlyImage,
-                slideEndHandler: (Offset offset, {
+                slideEndHandler: (
+                  Offset offset, {
                   ExtendedImageSlidePageState? state,
                   ScaleEndDetails? details,
                 }) {
@@ -291,8 +262,7 @@ class _VideoScreenState extends TIMUIKitState<VideoScreen> {
                 child: TIMUIKitVideoPlayer(
                   message: widget.message,
                   controller: true,
-                  isSending: widget.message.status ==
-                      MessageStatus.V2TIM_MSG_STATUS_SENDING,
+                  isSending: widget.message.status == MessageStatus.V2TIM_MSG_STATUS_SENDING,
                 ),
               ),
             ),

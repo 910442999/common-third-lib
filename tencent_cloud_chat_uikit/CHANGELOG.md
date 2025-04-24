@@ -1,3 +1,7 @@
+# 4.0.5
+* Upgrade tencent_cloud_chat_sdk to the minimum version 8.5.6864+6.
+* Changed the SDK interface call from getConversationListByConversaionIds to getConversationListByConversationIds.
+
 # 4.0.4
 * Remove the import of tencent_im_base plugin.
 * Upgrade tencent_cloud_chat_sdk to the minimum version 8.5.6864+4.
