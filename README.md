@@ -1,6 +1,9 @@
 ## 说明
 
 ## 1、版本说明
+# 1.0.2
+-升级tencent_cloud_chat_uikit-4.0.5至tencent_cloud_chat_uikit-4.0.6
+
 # 1.0.1
 -升级tencent_cloud_chat_uikit-4.0.4至tencent_cloud_chat_uikit-4.0.5
 
