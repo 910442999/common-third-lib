@@ -1,3 +1,7 @@
+# 4.0.6
+* Solve the updateSelfInfo exception problem.
+* The success of calling the initSDK interface is determined by the code of the return value. Avoid inaccurate judgment when calling the interface multiple times.
+
 # 4.0.5
 * Upgrade tencent_cloud_chat_sdk to the minimum version 8.5.6864+6.
 * Changed the SDK interface call from getConversationListByConversaionIds to getConversationListByConversationIds.
