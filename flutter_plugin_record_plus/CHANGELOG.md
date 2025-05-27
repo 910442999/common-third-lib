@@ -1,3 +1,7 @@
+## 0.0.20
+
+* Remove embedding v1 registration method.
+
 ## 0.0.19
 
 * Modify kotlinOptions to Java 1.8

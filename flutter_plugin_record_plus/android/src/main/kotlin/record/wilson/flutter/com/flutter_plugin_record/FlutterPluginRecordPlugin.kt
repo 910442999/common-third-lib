@@ -38,34 +38,58 @@ class FlutterPluginRecordPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
     private var audioHandler: AudioHandler? = null
 
     var activity:Activity? = null
-    private var binding: ActivityPluginBinding? = null
 
-    // 新版本插件初始化入口
-    override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        channel = MethodChannel(binding.binaryMessenger, "flutter_plugin_record")
-        channel.setMethodCallHandler(this)
+    companion object {
+//        //support embedding v1
+//        @JvmStatic
+//        fun registerWith(registrar: Registrar) {
+//            val plugin = initPlugin(registrar.messenger())
+//            plugin.activity= registrar.activity()
+//            registrar.addRequestPermissionsResultListener(plugin)
+//        }
+
+        private fun initPlugin(binaryMessenger: BinaryMessenger):FlutterPluginRecordPlugin {
+            val channel = createMethodChannel(binaryMessenger)
+            val plugin = FlutterPluginRecordPlugin()
+            channel.setMethodCallHandler(plugin)
+            plugin.channel = channel
+            return plugin
+        }
+
+        private fun createMethodChannel(binaryMessenger: BinaryMessenger):MethodChannel{
+            return  MethodChannel(binaryMessenger, "flutter_plugin_record");
+        }
     }
+    override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+       val methodChannel = createMethodChannel(binding.binaryMessenger)
+        methodChannel.setMethodCallHandler(this)
+        channel=methodChannel
+    }
+
+
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        channel.setMethodCallHandler(null)
     }
 
-    // Activity 相关生命周期
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-        this.binding = binding
-        activity = binding.activity
+        initActivityBinding(binding)
+    }
+
+    private fun initActivityBinding(binding: ActivityPluginBinding) {
         binding.addRequestPermissionsResultListener(this)
+        activity=binding.activity
     }
 
-    override fun onDetachedFromActivityForConfigChanges() = onDetachedFromActivity()
 
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        initActivityBinding(binding)
+    }
+
+    override fun onDetachedFromActivityForConfigChanges() {
+    }
     override fun onDetachedFromActivity() {
-        binding?.removeRequestPermissionsResultListener(this)
-        binding = null
-        activity = null
     }
 
-    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) = onAttachedToActivity(binding)
 
     override  fun onMethodCall(call: MethodCall, result: Result) {
         _result = result
