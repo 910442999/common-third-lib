@@ -1,3 +1,6 @@
+##1.2.9
+-插件及Android Demo工程适配flutter_3.29
+
 ##1.2.8
 -插件及Android Demo工程适配flutter_3.24.3
 

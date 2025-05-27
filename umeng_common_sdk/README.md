@@ -5,7 +5,7 @@
 在工程 pubspec.yaml 中加入 dependencies
 
 dependencies:
-  umeng_common_sdk: 1.2.8
+  umeng_common_sdk: 1.2.9
 
 # 使用
 

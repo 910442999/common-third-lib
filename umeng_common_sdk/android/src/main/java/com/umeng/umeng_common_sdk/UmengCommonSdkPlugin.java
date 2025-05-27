@@ -2,7 +2,6 @@ package com.umeng.umeng_common_sdk;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -22,63 +21,68 @@ import io.flutter.plugin.common.MethodChannel.Result;
 
 /** UmengCommonSdkPlugin */
 public class UmengCommonSdkPlugin implements FlutterPlugin, MethodCallHandler {
+  /// The MethodChannel that will the communication between Flutter and native Android
+  ///
+  /// This local reference serves to register the plugin with the Flutter Engine and unregister it
+  /// when the Flutter Engine is detached from the Activity
   private MethodChannel channel;
-  private Context applicationContext;
-  private static Boolean versionMatch = false;
+
+
+  private static void onAttachedEngineAdd() {
+// add by umeng
+    try {
+      Class<?> agent = Class.forName("com.umeng.analytics.MobclickAgent");
+      Method[] methods = agent.getDeclaredMethods();
+      for (Method m : methods) {
+        android.util.Log.e("UMLog", "Reflect:"+m);
+        if(m.getName().equals("onEventObject")) {
+          versionMatch = true;
+          break;
+        }
+      }
+      if(!versionMatch) {
+        android.util.Log.e("UMLog", "安卓SDK版本过低，建议升级至8以上");
+        //return;
+      }
+      else {
+        android.util.Log.e("UMLog", "安卓依赖版本检查成功");
+      }
+    }
+    catch (Exception e) {
+      e.printStackTrace();
+      android.util.Log.e("UMLog", "SDK版本过低，请升级至8以上"+e.toString());
+      return;
+    }
+
+    Method method = null;
+    try {
+      Class<?> config = Class.forName("com.umeng.commonsdk.UMConfigure");
+      method = config.getDeclaredMethod("setWraperType", String.class, String.class);
+      method.setAccessible(true);
+      method.invoke(null, "flutter","1.0");
+      android.util.Log.i("UMLog", "setWraperType:flutter1.0 success");
+    }
+    catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | ClassNotFoundException e) {
+      e.printStackTrace();
+      android.util.Log.e("UMLog", "setWraperType:flutter1.0"+e.toString());
+    }
+  }
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-    applicationContext = flutterPluginBinding.getApplicationContext();
+    mContext = flutterPluginBinding.getApplicationContext();
     channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "umeng_common_sdk");
     channel.setMethodCallHandler(this);
     onAttachedEngineAdd();
   }
 
-  private void onAttachedEngineAdd() {
-    // add by umeng
-    try {
-      Class<?> agent = Class.forName("com.umeng.analytics.MobclickAgent");
-      Method[] methods = agent.getDeclaredMethods();
-      for (Method m : methods) {
-        Log.e("UMLog", "Reflect:" + m);
-        if (m.getName().equals("onEventObject")) {
-          versionMatch = true;
-          break;
-        }
-      }
-      if (!versionMatch) {
-        Log.e("UMLog", "安卓SDK版本过低，建议升级至8以上");
-      } else {
-        Log.e("UMLog", "安卓依赖版本检查成功");
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-      Log.e("UMLog", "SDK版本过低，请升级至8以上" + e.toString());
-      return;
-    }
-
-    try {
-      Class<?> config = Class.forName("com.umeng.commonsdk.UMConfigure");
-      Method method = config.getDeclaredMethod("setWraperType", String.class, String.class);
-      method.setAccessible(true);
-      method.invoke(null, "flutter", "1.0");
-      Log.i("UMLog", "setWraperType:flutter1.0 success");
-    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | ClassNotFoundException e) {
-      e.printStackTrace();
-      Log.e("UMLog", "setWraperType:flutter1.0" + e.toString());
-    }
-  }
-
-  @Override
-  public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
-    channel.setMethodCallHandler(null);
-    applicationContext = null;
-  }
+  private static Context mContext = null;
 
   @Override
   public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
-    if (!versionMatch) {
-      Log.e("UMLog", "onMethodCall:" + call.method + ":安卓SDK版本过低，请升级至8以上");
+    if(!versionMatch) {
+      android.util.Log.e("UMLog", "onMethodCall:"+call.method+":安卓SDK版本过低，请升级至8以上");
+      //return;
     }
     try {
       List args = (List) call.arguments;
@@ -119,60 +123,93 @@ public class UmengCommonSdkPlugin implements FlutterPlugin, MethodCallHandler {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      Log.e("Umeng", "Exception:" + e.getMessage());
+      android.util.Log.e("Umeng", "Exception:"+e.getMessage());
     }
   }
 
-  private void initCommon(List args) {
-    String appkey = (String) args.get(0);
-    String channel = (String) args.get(2);
-    String pushSecret = args.size() > 3 ? (String) args.get(3) : null;
+  @Override
+  public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+    channel.setMethodCallHandler(null);
+  }
 
-    UMConfigure.init(applicationContext, appkey, channel, UMConfigure.DEVICE_TYPE_PHONE, pushSecret);
+  private static Boolean versionMatch = false;
+
+  public static void setContext (Context ctx) {
+    mContext = ctx;
+  }
+
+  public static Context getContext () {
+    return mContext;
+  }
+
+  private void initCommon(List args) {
+    String appkey = (String)args.get(0);
+    String channel = (String)args.get(2);
+    String pushSecret = null;
+    if(args.size() > 3) {
+      pushSecret = (String)args.get(3);
+    }
+    
+    UMConfigure.init(getContext(), appkey, channel, UMConfigure.DEVICE_TYPE_PHONE, pushSecret);
+    // android.util.Log.i("UMLog", "initCommon:"+appkey+"@"+channel);
+    // if (!TextUtils.isEmpty(pushSecret)) {
+    //   android.util.Log.i("UMLog", "initCommon:"+"pushSecret :"+ pushSecret);
+    // }
   }
 
   private void onEvent(List args) {
-    String event = (String) args.get(0);
-    Map map = args.size() > 1 ? (Map) args.get(1) : null;
-    MobclickAgent.onEventObject(applicationContext, event, map);
+    String event = (String)args.get(0);
+    Map map = null ;
+    if(args.size()>1) {
+      map = (Map) args.get(1);
+    }
+    //JSONObject properties = new JSONObject(map);
+    MobclickAgent.onEventObject(getContext(), event, map);
+
+    if(map!=null) {
+//      android.util.Log.i("UMLog", "onEventObject:"+event+"("+map.toString()+")");
+    }
+    else {
+//      android.util.Log.i("UMLog", "onEventObject:"+event);
+    }
   }
 
-  private void onProfileSignIn(List args) {
-    String userID = (String) args.get(0);
+  private void onProfileSignIn (List args) {
+    String userID = (String)args.get(0);
     MobclickAgent.onProfileSignIn(userID);
-    Log.i("UMLog", "onProfileSignIn:" + userID);
+    android.util.Log.i("UMLog", "onProfileSignIn:"+userID);
   }
 
-  private void onProfileSignOff() {
+  private void onProfileSignOff () {
     MobclickAgent.onProfileSignOff();
-    Log.i("UMLog", "onProfileSignOff");
+    android.util.Log.i("UMLog", "onProfileSignOff");
   }
 
-  private void setPageCollectionModeAuto() {
+  private void setPageCollectionModeAuto () {
     MobclickAgent.setPageCollectionMode(MobclickAgent.PageMode.AUTO);
-    Log.i("UMLog", "setPageCollectionModeAuto");
+    android.util.Log.i("UMLog", "setPageCollectionModeAuto");
   }
 
-  private void setPageCollectionModeManual() {
+  private void setPageCollectionModeManual () {
     MobclickAgent.setPageCollectionMode(MobclickAgent.PageMode.MANUAL);
-    Log.i("UMLog", "setPageCollectionModeManual");
+    android.util.Log.i("UMLog", "setPageCollectionModeManual");
   }
 
   private void onPageStart(List args) {
-    String event = (String) args.get(0);
+    String event = (String)args.get(0);
     MobclickAgent.onPageStart(event);
-    Log.i("UMLog", "onPageStart:" + event);
+    android.util.Log.i("UMLog", "onPageStart:"+event);
   }
 
   private void onPageEnd(List args) {
-    String event = (String) args.get(0);
+    String event = (String)args.get(0);
     MobclickAgent.onPageEnd(event);
-    Log.i("UMLog", "onPageEnd:" + event);
+    android.util.Log.i("UMLog", "onPageEnd:"+event);
   }
 
-  private void reportError(List args) {
-    String error = (String) args.get(0);
-    MobclickAgent.reportError(applicationContext, error);
-    Log.i("UMLog", "reportError:" + error);
+  private void reportError(List args){
+    String error = (String)args.get(0);
+    MobclickAgent.reportError(getContext(), error);
+    android.util.Log.i("UMLog", "reportError:"+error);
   }
 }
